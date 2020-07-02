@@ -221,11 +221,11 @@ int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char 
 
 int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28])
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y | MASK_REVERT_Y, 1, index, cell, output_buffer);
+	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y | MASK_REVERT_Y, 7, index, cell, output_buffer);
 }
 
 int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28])
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y, 1, index, cell, output_buffer);
+	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y, 9, index, cell, output_buffer);
 }
 
