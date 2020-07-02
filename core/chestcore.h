@@ -30,11 +30,11 @@
 #define CELL_BLACK_KNIGHT -5
 #define CELL_BLACK_PAWN -6
 
-struct game {
+typedef struct {
 	char state;
 	char last_cell;
 	char cells[64];
-};
+} game;
 
 void cc_init(game* game_ptr);
 // char cc_get_cell_id(int x, int y);
@@ -42,16 +42,17 @@ char cc_get_cell_id_by_id(int id);
 char cc_get_x_cell(char cell);
 char cc_get_y_cell(char cell);
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
-void cc_get_piece(char piece);
-int cc_get_potential_turns(char piece, char cell, char output_buffer[28]);
+char cc_get_piece(char piece);
+int cc_is_piece_same_color(char a, char b);
+int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
 
 #ifdef CHESTCORE_USE_INTERNAL_FUNCTIONS
 // Internals
-int cc_internal_get_potential_king_turns(char cell, char output_buffer[28]);
-int cc_internal_get_potential_knight_turns(char cell, char output_buffer[28]);
-int cc_internal_fill_potential_hline(int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_vline(int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_dline7(int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_dline9(int index, char cell, char output_buffer[28]);
+int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28]);
+int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_hline(game* game_ptr, int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28]);
 #endif
 
