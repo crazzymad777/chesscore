@@ -29,6 +29,18 @@ char cc_get_cell_id_by_id(int id)
 	return (id >= 0 && id < 64) ? id : -1;
 }
 
+char cc_get_x_cell(char cell)
+{
+	// TODO: check cell value
+	return cell%8;
+}
+
+char cc_get_y_cell(char cell)
+{
+	// TODO: check cell value
+	return cell/8;
+}
+
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
 {
 	memset(game_ptr->output_buffer, -1, 28);
@@ -41,7 +53,7 @@ void cc_get_piece(char piece)
 	return abs(piece);
 }
 
-void cc_get_potential_turns(char piece, char cell, char output_buffer[28])
+int cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 {
 	int current_piece = cc_get_piece(piece);
 
@@ -50,8 +62,7 @@ void cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 	switch (current_piece) {
 		case CELL_WHITE_KING:
 		{
-			cc_internal_get_potential_king_turns(cell, output_buffer);
-			break;
+			return cc_internal_get_potential_king_turns(cell, output_buffer);
 		}
 		case CELL_WHITE_QUEEN:
 		{
@@ -59,7 +70,9 @@ void cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 		}
 		case CELL_WHITE_ROOK:
 		{
-			break;
+			int index = 0;
+			index = cc_internal_fill_potential_hline(index, cell, output_buffer);
+			return cc_internal_fill_potential_vline(index, cell, output_buffer);
 		}
 		case CELL_WHITE_BISHOP:
 		{
@@ -76,7 +89,7 @@ void cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 	}
 }
 
-void cc_internal_get_potential_king_turns(char cell, char output_buffer[28])
+int cc_internal_get_potential_king_turns(char cell, char output_buffer[28])
 {
 	int moves[] = {-1, 7, 8, 9, 1, -7, -8, -9};
 	int index, i = 0;
@@ -89,5 +102,40 @@ void cc_internal_get_potential_king_turns(char cell, char output_buffer[28])
 			index++;
 		}
 	}
+	return index;
+}
+
+int cc_internal_fill_potential_hline(int index, char cell, char output_buffer[28])
+{
+	char x = cc_get_x_cell(cell);
+	int i;
+	for (i = x; i<8; i++)
+	{
+		output_buffer[index] = cell + i - x;
+		index++;
+	}
+	for (i = x; i>=0; i--)
+	{
+		output_buffer[index] = cell + i - x;
+		index++;
+	}
+	return index;
+}
+
+int cc_internal_fill_potential_vline(int index, char cell, char output_buffer[28])
+{
+	char y = cc_get_y_cell(cell);
+	int i;
+	for (i = y; i<8; i++)
+	{
+		output_buffer[index] = cell + (i - y)*8;
+		index++;
+	}
+	for (i = y; i>=0; i--)
+	{
+		output_buffer[index] = cell + (i - y)*8;
+		index++;
+	}
+	return index;
 }
 

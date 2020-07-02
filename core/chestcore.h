@@ -39,8 +39,14 @@ struct game {
 void cc_init(game* game_ptr);
 // char cc_get_cell_id(int x, int y);
 char cc_get_cell_id_by_id(int id);
+char cc_get_x_cell(char cell);
+char cc_get_y_cell(char cell);
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
 void cc_get_piece(char piece);
-void cc_get_potential_turns(char piece, char cell, char output_buffer[28]);
-void cc_internal_get_potential_king_turns(char cell, char output_buffer[28]);
+int cc_get_potential_turns(char piece, char cell, char output_buffer[28]);
+
+// Internals
+int cc_internal_get_potential_king_turns(char cell, char output_buffer[28]);
+int cc_internal_fill_potential_hline(int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_vline(int index, char cell, char output_buffer[28]);
 
