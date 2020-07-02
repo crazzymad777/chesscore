@@ -7,9 +7,9 @@
  * license.
  */
 
-#define CHESTCORE_USE_INTERNAL_FUNCTIONS 1
+#define CHESSCORE_USE_INTERNAL_FUNCTIONS 1
 
-#include "chestcore.h"
+#include "chesscore.h"
 #include <stdlib.h>
 #include <string.h>
 

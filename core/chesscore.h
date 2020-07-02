@@ -46,7 +46,7 @@ char cc_get_piece(char piece);
 int cc_is_piece_same_color(char a, char b);
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
 
-#ifdef CHESTCORE_USE_INTERNAL_FUNCTIONS
+#ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
 int cc_internal_calculate_start_index(int bitset, int step, int x, int y);
 int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, char cell, char output_buffer[28]);
