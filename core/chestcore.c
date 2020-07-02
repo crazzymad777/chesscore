@@ -88,7 +88,7 @@ int cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 		}
 		case CELL_WHITE_KNIGHT:
 		{
-			break;
+			return cc_internal_get_potential_knight_turns(cell, output_buffer);
 		}
 		case CELL_WHITE_PAWN:
 		{
@@ -112,6 +112,23 @@ int cc_internal_get_potential_king_turns(char cell, char output_buffer[28])
 	}
 	return index;
 }
+
+int cc_internal_get_potential_knight_turns(char cell, char output_buffer[28])
+{
+	int moves[] = {6, 15, 17, 10, -6, -15, -17, -10};
+	int index, i = 0;
+	for (; i < 8; i++)
+	{
+		char new_cell = cc_get_cell_id_by_id(cell + moves[i]);
+		if (new_cell != -1)
+		{
+			output_buffer[index] = new_cell;
+			index++;
+		}
+	}
+	return index;
+}
+
 
 int cc_internal_fill_potential_hline(int index, char cell, char output_buffer[28])
 {
