@@ -45,8 +45,12 @@ void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
 void cc_get_piece(char piece);
 int cc_get_potential_turns(char piece, char cell, char output_buffer[28]);
 
+#ifdef CHESTCORE_USE_INTERNAL_FUNCTIONS
 // Internals
 int cc_internal_get_potential_king_turns(char cell, char output_buffer[28]);
 int cc_internal_fill_potential_hline(int index, char cell, char output_buffer[28]);
 int cc_internal_fill_potential_vline(int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_dline7(int index, char cell, char output_buffer[28]);
+int cc_internal_fill_potential_dline9(int index, char cell, char output_buffer[28]);
+#endif
 

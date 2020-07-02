@@ -7,6 +7,8 @@
  * license.
  */
 
+#define CHESTCORE_USE_INTERNAL_FUNCTIONS 1
+
 #include "chestcore.h"
 #include <stdlib.h>
 #include <math.h>
@@ -66,7 +68,11 @@ int cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 		}
 		case CELL_WHITE_QUEEN:
 		{
-			break;
+			int index = 0;
+			index = cc_internal_fill_potential_hline(index, cell, output_buffer);
+			index = cc_internal_fill_potential_vline(index, cell, output_buffer);
+			index = cc_internal_fill_potential_dline7(index, cell, output_buffer);
+			return cc_internal_fill_potential_dline9(index, cell, output_buffer);
 		}
 		case CELL_WHITE_ROOK:
 		{
@@ -76,7 +82,9 @@ int cc_get_potential_turns(char piece, char cell, char output_buffer[28])
 		}
 		case CELL_WHITE_BISHOP:
 		{
-			break;
+			int index = 0;
+			index = cc_internal_fill_potential_dline7(index, cell, output_buffer);
+			return cc_internal_fill_potential_dline9(index, cell, output_buffer);
 		}
 		case CELL_WHITE_KNIGHT:
 		{
@@ -134,6 +142,44 @@ int cc_internal_fill_potential_vline(int index, char cell, char output_buffer[28
 	for (i = y; i>=0; i--)
 	{
 		output_buffer[index] = cell + (i - y)*8;
+		index++;
+	}
+	return index;
+}
+
+
+int cc_internal_fill_potential_dline7(int index, char cell, char output_buffer[28])
+{
+	char x = cc_get_x_cell(cell);
+	char y = cc_get_y_cell(cell);
+	int i;
+	for (i = 7-max(x, 7-y); i>=0; i--)
+	{
+		output_buffer[index] = cell + (i - x)*7;
+		index++;
+	}
+	for (i = 7-max(7-x, y); i<8; i++)
+	{
+		output_buffer[index] = cell + (i - x)*7;
+		index++;
+	}
+	return index;
+}
+
+
+int cc_internal_fill_potential_dline9(int index, char cell, char output_buffer[28])
+{
+	char x = cc_get_x_cell(cell);
+	char y = cc_get_y_cell(cell);
+	int i;
+	for (i = 7-max(x, y); i>=0; i--)
+	{
+		output_buffer[index] = cell + (i - x)*9;
+		index++;
+	}
+	for (i = 7-max(7-x, 7-y); i<8; i++)
+	{
+		output_buffer[index] = cell + (i - x)*9;
 		index++;
 	}
 	return index;
