@@ -36,6 +36,10 @@ typedef struct {
 	char cells[64];
 } game;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void cc_init(game* game_ptr);
 // char cc_get_cell_id(int x, int y);
 char cc_get_cell_id_by_id(int id);
@@ -45,6 +49,10 @@ void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
 char cc_get_piece(char piece);
 int cc_is_piece_same_color(char a, char b);
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
