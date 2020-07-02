@@ -20,9 +20,20 @@ int max(int x, int y)
 
 void cc_init(game* game_ptr)
 {
+	static const char START_CELLS[64] = {
+	CELL_WHITE_ROOK, CELL_WHITE_KNIGHT, CELL_WHITE_BISHOP, CELL_WHITE_QUEEN, CELL_WHITE_KING, CELL_WHITE_BISHOP, CELL_WHITE_KNIGHT, CELL_WHITE_ROOK,
+	CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN, CELL_WHITE_PAWN,
+	CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE,
+	CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE,
+	CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE,
+	CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE, CELL_NONE,
+	CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN, CELL_BLACK_PAWN,
+	CELL_BLACK_ROOK, CELL_BLACK_KNIGHT, CELL_BLACK_BISHOP, CELL_BLACK_QUEEN, CELL_BLACK_KING, CELL_BLACK_BISHOP, CELL_BLACK_KNIGHT, CELL_BLACK_ROOK
+	};
+
 	game_ptr->state = 0;
 	game_ptr->last_cell = -1;
-	memset(game_ptr->cells, 0, 64);
+	memcpy(game_ptr->cells, START_CELLS, 64);
 }
 
 char cc_get_cell_id(int x, int y)
@@ -60,7 +71,13 @@ char cc_get_y_cell(char cell)
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
 {
 	memset(output_buffer, -1, 28);
-	// 1. check game state
+
+	if (game_ptr->state & 1 << STATE_BIT_STALEMATE || game_ptr->state & 1 << STATE_BIT_WHITE_VICTORY || game_ptr->state & 1 << STATE_BIT_BLACK_VICTORY)
+	{
+		// Game over
+		return;
+	}
+
 	// 2. check
 }
 
