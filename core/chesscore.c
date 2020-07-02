@@ -173,22 +173,11 @@ int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char outpu
 	return index;
 }
 
-int cc_internal_calculate_start_index(int bitset, int step, int x, int y)
+int cc_internal_get_start_index(int bitset, int x, int y)
 {
 	if ((bitset & MASK_USE_X) && (bitset & MASK_USE_Y))
 	{
-		int revert_x, revert_y;
-		if (step == 0)
-		{
-			revert_x = bitset & MASK_REVERT_X;
-			revert_y = bitset & MASK_REVERT_Y;
-		}
-		else
-		{
-			revert_x = !(bitset & MASK_REVERT_X);
-			revert_y = !(bitset & MASK_REVERT_Y);
-		}
-		return 7-max(revert_x ? 7-x : x, revert_y ? 7-y : y);
+		return x;
 	}
 	else
 	{
@@ -210,18 +199,42 @@ int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, ch
 	char x = cc_get_x_cell(cell);
 	char y = cc_get_y_cell(cell);
 	int i;
-	
-	for (i = cc_internal_calculate_start_index(bitset, 0, x, y); i < 8; i++)
+
+	i = cc_internal_get_start_index(bitset, x, y);
+	for (; i < 8; i++)
 	{
 		char new_cell = cell + (i - x) * offset;
-		output_buffer[index] = new_cell;
-		index++;
+		if (new_cell >=0 && new_cell < 64)
+		{
+			char piece = game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			{
+				output_buffer[index] = new_cell;
+				index++;
+			}
+			if (piece != CELL_NONE)
+			{
+				break;
+			}
+		}
 	}
-	for (i = cc_internal_calculate_start_index(bitset, 1, x, y); i >= 0; i--)
+	i = cc_internal_get_start_index(bitset, x, y);
+	for (; i >= 0; i--)
 	{
 		char new_cell = cell + (i - x) * offset;
-		output_buffer[index] = new_cell;
-		index++;
+		if (new_cell >=0 && new_cell < 64)
+		{
+			char piece = game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			{
+				output_buffer[index] = new_cell;
+				index++;
+			}
+			if (piece != CELL_NONE)
+			{
+				break;
+			}
+		}
 	}
 	return index;
 }
@@ -238,7 +251,7 @@ int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char 
 
 int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28])
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y | MASK_REVERT_Y, 7, index, cell, output_buffer);
+	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y, 7, index, cell, output_buffer);
 }
 
 int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28])

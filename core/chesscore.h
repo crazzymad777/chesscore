@@ -56,7 +56,7 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
 
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
-int cc_internal_calculate_start_index(int bitset, int step, int x, int y);
+int cc_internal_get_start_index(int bitset, int x, int y);
 int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, char cell, char output_buffer[28]);
 int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28]);
 int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28]);
@@ -65,8 +65,6 @@ int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char 
 int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28]);
 int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28]);
 
-#define MASK_REVERT_X 0x10
-#define MASK_REVERT_Y 0x100
 #define MASK_USE_X 0x1000
 #define MASK_USE_Y 0x10000
 #endif
