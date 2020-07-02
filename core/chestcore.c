@@ -27,8 +27,11 @@ void cc_init(game* game_ptr)
 
 char cc_get_cell_id(int x, int y)
 {
-	/* TODO: check x and y */
-	return x+y*8;
+	if (x < 0 || x >= 8 || y < 0 || y >= 8)
+	{
+		return -1;
+	}
+	return x + y * 8;
 }
 
 char cc_get_cell_id_by_id(int id)
@@ -38,14 +41,20 @@ char cc_get_cell_id_by_id(int id)
 
 char cc_get_x_cell(char cell)
 {
-	// TODO: check cell value
-	return cell%8;
+	if (cell < 0 || cell >= 64)
+	{
+		return -1;
+	}
+	return cell % 8;
 }
 
 char cc_get_y_cell(char cell)
 {
-	// TODO: check cell value
-	return cell/8;
+	if (cell < 0 || cell >= 64)
+	{
+		return -1;
+	}
+	return cell / 8;
 }
 
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
