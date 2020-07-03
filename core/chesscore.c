@@ -106,7 +106,7 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 		if (cc_is_piece_same_color(color, game_ptr->cells[i]))
 		{
 			char output_buffer[26];
-			cc_get_potential_turns(game_ptr, i, output_buffer);
+			cc_get_potential_turns_ex(game_ptr, i, output_buffer, 1);
 
 			int x;
 			for (x = 0; x < 28; x++)
@@ -121,15 +121,21 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 	return 0;
 }
 
-int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
+int cc_get_potential_turns_ex(game* game_ptr, char cell, char output_buffer[28], char pawn_attack)
 {
 	TurnContext context;
 	context.game_ptr = game_ptr;
 	context.index = 0;
 	context.cell = cell;
+	context.pawn_attack = pawn_attack;
 	context.output_buffer = output_buffer;
 
 	return cc_internal_get_potential_turns(&context);
+}
+
+int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
+{
+	return cc_get_potential_turns_ex(game_ptr, cell, output_buffer, 0);
 }
 
 int cc_internal_get_potential_turns(TurnContext* context)
@@ -208,7 +214,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	if (new_cell != -1)
 	{
 		char piece = context->game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->pawn_attack)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;
@@ -237,7 +243,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	if (new_cell != -1)
 	{
 		char piece = context->game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->pawn_attack)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;

@@ -50,6 +50,7 @@ typedef struct{
 	game* game_ptr;
 	int index;
 	char cell;
+	char pawn_attack;
 	char* output_buffer;
 } TurnContext;
 
@@ -65,7 +66,9 @@ char cc_get_y_cell(char cell);
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
 char cc_get_piece(char piece);
 int cc_is_piece_same_color(char a, char b);
+int cc_get_potential_turns_ex(game* game_ptr, char cell, char output_buffer[28], char pawn_attack);
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
+char cc_get_opposite_color(char piece);
 
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
