@@ -190,7 +190,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	char new_cell = cc_get_cell_id_by_id(context->cell + direction);
 
 	// 
-	if (context->game_ptr->cells[new_cell] == CELL_NONE)
+	if (context->game_ptr->cells[new_cell] == CELL_NONE && !context->pawn_attack)
 	{
 		context->output_buffer[context->index] = new_cell;
 		context->index++;
