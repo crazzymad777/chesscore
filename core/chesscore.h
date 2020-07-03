@@ -56,7 +56,7 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
 
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
-int cc_internal_get_start_index(int bitset, int x, int y);
+int cc_internal_get_index(int bitset, int x, int y);
 int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, char cell, char output_buffer[28]);
 int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28]);
 int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28]);

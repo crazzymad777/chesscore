@@ -92,6 +92,13 @@ int main(int argc, char* argv[])
 			}
 			std::cout << std::endl;
 		}
+		if (cmd == "set")
+		{
+			int x, y, cell;
+			std::cin >> x >> y >> cell;
+
+			chess_game.cells[x+y*8] = cell;
+		}
 
 		std::cout << "Enter command: ";
 		std::cin >> cmd;

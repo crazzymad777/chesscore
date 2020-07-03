@@ -136,7 +136,7 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28])
 {
 	int moves[] = {-1, 7, 8, 9, 1, -7, -8, -9};
-	int index, i = 0;
+	int index = 0, i = 0;
 	for (; i < 8; i++)
 	{
 		char new_cell = cc_get_cell_id_by_id(cell + moves[i]);
@@ -156,7 +156,7 @@ int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_
 int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28])
 {
 	int moves[] = {6, 15, 17, 10, -6, -15, -17, -10};
-	int index, i = 0;
+	int index = 0, i = 0;
 	for (; i < 8; i++)
 	{
 		char new_cell = cc_get_cell_id_by_id(cell + moves[i]);
@@ -173,22 +173,15 @@ int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char outpu
 	return index;
 }
 
-int cc_internal_get_start_index(int bitset, int x, int y)
+int cc_internal_get_index(int bitset, int x, int y)
 {
-	if ((bitset & MASK_USE_X) && (bitset & MASK_USE_Y))
+	if (bitset & MASK_USE_X)
 	{
 		return x;
 	}
-	else
+	if (bitset & MASK_USE_Y)
 	{
-		if (bitset & MASK_USE_X)
-		{
-			return x;
-		}
-		if (bitset & MASK_USE_Y)
-		{
-			return y;
-		}
+		return y;
 	}
 	// Something wrong?
 	return -1;
@@ -200,7 +193,7 @@ int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, ch
 	char y = cc_get_y_cell(cell);
 	int i;
 
-	i = cc_internal_get_start_index(bitset, x, y);
+	i = cc_internal_get_index(bitset, x, y) + 1;
 	for (; i < 8; i++)
 	{
 		char new_cell = cell + (i - x) * offset;
@@ -218,7 +211,7 @@ int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, ch
 			}
 		}
 	}
-	i = cc_internal_get_start_index(bitset, x, y);
+	i = cc_internal_get_index(bitset, x, y) - 1;
 	for (; i >= 0; i--)
 	{
 		char new_cell = cell + (i - x) * offset;
