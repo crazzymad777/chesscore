@@ -98,11 +98,11 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 	memset(output_buffer, -1, 28);
 
 	switch (current_piece) {
-		case CELL_WHITE_KING:
+		case PIECE_KING:
 		{
 			return cc_internal_get_potential_king_turns(game_ptr, cell, output_buffer);
 		}
-		case CELL_WHITE_QUEEN:
+		case PIECE_QUEEN:
 		{
 			int index = 0;
 			index = cc_internal_fill_potential_hline(game_ptr, index, cell, output_buffer);
@@ -110,27 +110,116 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 			index = cc_internal_fill_potential_dline7(game_ptr, index, cell, output_buffer);
 			return cc_internal_fill_potential_dline9(game_ptr, index, cell, output_buffer);
 		}
-		case CELL_WHITE_ROOK:
+		case PIECE_ROOK:
 		{
 			int index = 0;
 			index = cc_internal_fill_potential_hline(game_ptr, index, cell, output_buffer);
 			return cc_internal_fill_potential_vline(game_ptr, index, cell, output_buffer);
 		}
-		case CELL_WHITE_BISHOP:
+		case PIECE_BISHOP:
 		{
 			int index = 0;
 			index = cc_internal_fill_potential_dline7(game_ptr, index, cell, output_buffer);
 			return cc_internal_fill_potential_dline9(game_ptr, index, cell, output_buffer);
 		}
-		case CELL_WHITE_KNIGHT:
+		case PIECE_KNIGHT:
 		{
 			return cc_internal_get_potential_knight_turns(game_ptr, cell, output_buffer);
 		}
-		case CELL_WHITE_PAWN:
+		case PIECE_PAWN:
 		{
-			break;
+			return cc_internal_get_potential_pawn_turns(game_ptr, cell, output_buffer);
 		}
 	}
+	return 0;
+}
+
+int cc_internal_get_potential_pawn_turns(game* game_ptr, char cell, char output_buffer[28])
+{
+	int direction = (game_ptr->cells[cell] > 0) ? 8 : -8;
+	char new_cell = cc_get_cell_id_by_id(cell + direction);
+
+	// 
+	int index = 0;
+	if (game_ptr->cells[new_cell] == CELL_NONE)
+	{
+		output_buffer[index] = new_cell;
+		index++;
+
+		new_cell = cc_get_cell_id_by_id(cell + direction * 2);
+		if (new_cell != -1)
+		{
+			if ( (direction == 8  && cc_get_y_cell(cell) == 1) ||
+				 (direction == -8 && cc_get_y_cell(cell) == 7) )
+			{
+				if (game_ptr->cells[new_cell] == CELL_NONE)
+				{
+					output_buffer[index] = new_cell;
+					index++;
+				}
+			}
+		}
+	}
+	
+	new_cell = cc_get_cell_id_by_id(cell + direction + 1);
+	if (new_cell != -1)
+	{
+		char piece = game_ptr->cells[new_cell];
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+		{
+			output_buffer[index] = new_cell;
+			index++;
+		}
+
+		// En passant
+		if ( (direction == 8  && cc_get_y_cell(cell) == 4) ||
+			 (direction == -8 && cc_get_y_cell(cell) == 3) )
+		{
+			if (game_ptr->last_cell == new_cell - direction)
+			{
+				piece = game_ptr->cells[game_ptr->last_cell];
+				if (cc_get_piece(piece) == PIECE_PAWN)
+				{
+					if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+					{
+						output_buffer[index] = new_cell;
+						index++;
+					}
+				}
+			}
+		}
+	}
+
+	new_cell = cc_get_cell_id_by_id(cell + direction - 1);
+	if (new_cell != -1)
+	{
+		char piece = game_ptr->cells[new_cell];
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+		{
+			output_buffer[index] = new_cell;
+			index++;
+		}
+
+		// En passant
+		if ( (direction == 8  && cc_get_y_cell(cell) == 4) ||
+			 (direction == -8 && cc_get_y_cell(cell) == 3) )
+		{
+			if (game_ptr->last_cell == new_cell - direction)
+			{
+				piece = game_ptr->cells[game_ptr->last_cell];
+				if (cc_get_piece(piece) == PIECE_PAWN)
+				{
+					if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+					{
+						output_buffer[index] = new_cell;
+						index++;
+					}
+				}
+			}
+		}
+	}
+
+	return index;
 }
 
 int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28])
