@@ -91,6 +91,36 @@ int cc_is_piece_same_color(char a, char b)
 	return (a > 0 && b > 0) || (a < 0 && b < 0);
 }
 
+char cc_get_opposite_color(char piece)
+{
+	if (piece > 0) return CHESSCORE_BLACK;
+	if (piece < 0) return CHESSCORE_WHITE;
+	return 0;
+}
+
+int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
+{
+	int i;
+	for (i = 0; i < 64; i++)
+	{
+		if (cc_is_piece_same_color(color, game_ptr->cells[i]))
+		{
+			char output_buffer[26];
+			cc_get_potential_turns(game_ptr, i, output_buffer);
+
+			int x;
+			for (x = 0; x < 28; x++)
+			{
+				if (output_buffer[x] == cell)
+				{
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 {
 	TurnContext context;
@@ -112,6 +142,7 @@ int cc_internal_get_potential_turns(TurnContext* context)
 		case PIECE_KING:
 		{
 			context->index = cc_internal_get_potential_king_turns(context);
+			break;
 		}
 		case PIECE_QUEEN:
 		{
@@ -119,24 +150,29 @@ int cc_internal_get_potential_turns(TurnContext* context)
 			context->index = cc_internal_fill_potential_vline(context);
 			context->index = cc_internal_fill_potential_dline7(context);
 			context->index = cc_internal_fill_potential_dline9(context);
+			break;
 		}
 		case PIECE_ROOK:
 		{
 			context->index = cc_internal_fill_potential_hline(context);
 			context->index = cc_internal_fill_potential_vline(context);
+			break;
 		}
 		case PIECE_BISHOP:
 		{
 			context->index = cc_internal_fill_potential_dline7(context);
 			context->index = cc_internal_fill_potential_dline9(context);
+			break;
 		}
 		case PIECE_KNIGHT:
 		{
 			context->index = cc_internal_get_potential_knight_turns(context);
+			break;
 		}
 		case PIECE_PAWN:
 		{
 			context->index = cc_internal_get_potential_pawn_turns(context);
+			break;
 		}
 	}
 	return context->index;
@@ -239,10 +275,14 @@ int cc_internal_get_potential_king_turns(TurnContext* context)
 		if (new_cell != -1)
 		{
 			char piece = context->game_ptr->cells[new_cell];
+			char k_piece = context->game_ptr->cells[context->cell];
 			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
-				context->output_buffer[context->index] = new_cell;
-				context->index++;
+				if (!cc_is_cell_under_attack(context->game_ptr, cc_get_opposite_color(k_piece), new_cell))
+				{
+					context->output_buffer[context->index] = new_cell;
+					context->index++;
+				}
 			}
 		}
 	}
