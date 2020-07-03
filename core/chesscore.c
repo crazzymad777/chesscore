@@ -93,173 +93,180 @@ int cc_is_piece_same_color(char a, char b)
 
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 {
-	int current_piece = cc_get_piece(game_ptr->cells[cell]);
+	TurnContext context;
+	context.game_ptr = game_ptr;
+	context.index = 0;
+	context.cell = cell;
+	context.output_buffer = output_buffer;
 
-	memset(output_buffer, -1, 28);
+	return cc_internal_get_potential_turns(&context);
+}
+
+int cc_internal_get_potential_turns(TurnContext* context)
+{
+	int current_piece = cc_get_piece(context->game_ptr->cells[context->cell]);
+
+	memset(context->output_buffer, -1, 28);
 
 	switch (current_piece) {
 		case PIECE_KING:
 		{
-			return cc_internal_get_potential_king_turns(game_ptr, cell, output_buffer);
+			context->index = cc_internal_get_potential_king_turns(context);
 		}
 		case PIECE_QUEEN:
 		{
-			int index = 0;
-			index = cc_internal_fill_potential_hline(game_ptr, index, cell, output_buffer);
-			index = cc_internal_fill_potential_vline(game_ptr, index, cell, output_buffer);
-			index = cc_internal_fill_potential_dline7(game_ptr, index, cell, output_buffer);
-			return cc_internal_fill_potential_dline9(game_ptr, index, cell, output_buffer);
+			context->index = cc_internal_fill_potential_hline(context);
+			context->index = cc_internal_fill_potential_vline(context);
+			context->index = cc_internal_fill_potential_dline7(context);
+			context->index = cc_internal_fill_potential_dline9(context);
 		}
 		case PIECE_ROOK:
 		{
-			int index = 0;
-			index = cc_internal_fill_potential_hline(game_ptr, index, cell, output_buffer);
-			return cc_internal_fill_potential_vline(game_ptr, index, cell, output_buffer);
+			context->index = cc_internal_fill_potential_hline(context);
+			context->index = cc_internal_fill_potential_vline(context);
 		}
 		case PIECE_BISHOP:
 		{
-			int index = 0;
-			index = cc_internal_fill_potential_dline7(game_ptr, index, cell, output_buffer);
-			return cc_internal_fill_potential_dline9(game_ptr, index, cell, output_buffer);
+			context->index = cc_internal_fill_potential_dline7(context);
+			context->index = cc_internal_fill_potential_dline9(context);
 		}
 		case PIECE_KNIGHT:
 		{
-			return cc_internal_get_potential_knight_turns(game_ptr, cell, output_buffer);
+			context->index = cc_internal_get_potential_knight_turns(context);
 		}
 		case PIECE_PAWN:
 		{
-			return cc_internal_get_potential_pawn_turns(game_ptr, cell, output_buffer);
+			context->index = cc_internal_get_potential_pawn_turns(context);
 		}
 	}
-	return 0;
+	return context->index;
 }
 
-int cc_internal_get_potential_pawn_turns(game* game_ptr, char cell, char output_buffer[28])
+int cc_internal_get_potential_pawn_turns(TurnContext* context)
 {
-	int direction = (game_ptr->cells[cell] > 0) ? 8 : -8;
-	char new_cell = cc_get_cell_id_by_id(cell + direction);
+	int direction = (context->game_ptr->cells[context->cell] > 0) ? 8 : -8;
+	char new_cell = cc_get_cell_id_by_id(context->cell + direction);
 
 	// 
-	int index = 0;
-	if (game_ptr->cells[new_cell] == CELL_NONE)
+	if (context->game_ptr->cells[new_cell] == CELL_NONE)
 	{
-		output_buffer[index] = new_cell;
-		index++;
+		context->output_buffer[context->index] = new_cell;
+		context->index++;
 
-		new_cell = cc_get_cell_id_by_id(cell + direction * 2);
+		new_cell = cc_get_cell_id_by_id(context->cell + direction * 2);
 		if (new_cell != -1)
 		{
-			if ( (direction == 8  && cc_get_y_cell(cell) == 1) ||
-				 (direction == -8 && cc_get_y_cell(cell) == 7) )
+			if ( (direction == 8  && cc_get_y_cell(context->cell) == 1) ||
+				 (direction == -8 && cc_get_y_cell(context->cell) == 7) )
 			{
-				if (game_ptr->cells[new_cell] == CELL_NONE)
+				if (context->game_ptr->cells[new_cell] == CELL_NONE)
 				{
-					output_buffer[index] = new_cell;
-					index++;
+					context->output_buffer[context->index] = new_cell;
+					context->index++;
 				}
 			}
 		}
 	}
 	
-	new_cell = cc_get_cell_id_by_id(cell + direction + 1);
+	new_cell = cc_get_cell_id_by_id(context->cell + direction + 1);
 	if (new_cell != -1)
 	{
-		char piece = game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+		char piece = context->game_ptr->cells[new_cell];
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 		{
-			output_buffer[index] = new_cell;
-			index++;
+			context->output_buffer[context->index] = new_cell;
+			context->index++;
 		}
 
 		// En passant
-		if ( (direction == 8  && cc_get_y_cell(cell) == 4) ||
-			 (direction == -8 && cc_get_y_cell(cell) == 3) )
+		if ( (direction == 8  && cc_get_y_cell(context->cell) == 4) ||
+			 (direction == -8 && cc_get_y_cell(context->cell) == 3) )
 		{
-			if (game_ptr->last_cell == new_cell - direction)
+			if (context->game_ptr->last_cell == new_cell - direction)
 			{
-				piece = game_ptr->cells[game_ptr->last_cell];
+				piece = context->game_ptr->cells[context->game_ptr->last_cell];
 				if (cc_get_piece(piece) == PIECE_PAWN)
 				{
-					if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+					if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 					{
-						output_buffer[index] = new_cell;
-						index++;
+						context->output_buffer[context->index] = new_cell;
+						context->index++;
 					}
 				}
 			}
 		}
 	}
 
-	new_cell = cc_get_cell_id_by_id(cell + direction - 1);
+	new_cell = cc_get_cell_id_by_id(context->cell + direction - 1);
 	if (new_cell != -1)
 	{
-		char piece = game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+		char piece = context->game_ptr->cells[new_cell];
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 		{
-			output_buffer[index] = new_cell;
-			index++;
+			context->output_buffer[context->index] = new_cell;
+			context->index++;
 		}
 
 		// En passant
-		if ( (direction == 8  && cc_get_y_cell(cell) == 4) ||
-			 (direction == -8 && cc_get_y_cell(cell) == 3) )
+		if ( (direction == 8  && cc_get_y_cell(context->cell) == 4) ||
+			 (direction == -8 && cc_get_y_cell(context->cell) == 3) )
 		{
-			if (game_ptr->last_cell == new_cell - direction)
+			if (context->game_ptr->last_cell == new_cell - direction)
 			{
-				piece = game_ptr->cells[game_ptr->last_cell];
+				piece = context->game_ptr->cells[context->game_ptr->last_cell];
 				if (cc_get_piece(piece) == PIECE_PAWN)
 				{
-					if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+					if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 					{
-						output_buffer[index] = new_cell;
-						index++;
+						context->output_buffer[context->index] = new_cell;
+						context->index++;
 					}
 				}
 			}
 		}
 	}
 
-	return index;
+	return context->index;
 }
 
-int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28])
+int cc_internal_get_potential_king_turns(TurnContext* context)
 {
 	int moves[] = {-1, 7, 8, 9, 1, -7, -8, -9};
-	int index = 0, i = 0;
+	int i = 0;
 	for (; i < 8; i++)
 	{
-		char new_cell = cc_get_cell_id_by_id(cell + moves[i]);
+		char new_cell = cc_get_cell_id_by_id(context->cell + moves[i]);
 		if (new_cell != -1)
 		{
-			char piece = game_ptr->cells[new_cell];
-			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			char piece = context->game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
-				output_buffer[index] = new_cell;
-				index++;
+				context->output_buffer[context->index] = new_cell;
+				context->index++;
 			}
 		}
 	}
-	return index;
+	return context->index;
 }
 
-int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28])
+int cc_internal_get_potential_knight_turns(TurnContext* context)
 {
 	int moves[] = {6, 15, 17, 10, -6, -15, -17, -10};
-	int index = 0, i = 0;
+	int i = 0;
 	for (; i < 8; i++)
 	{
-		char new_cell = cc_get_cell_id_by_id(cell + moves[i]);
+		char new_cell = cc_get_cell_id_by_id(context->cell + moves[i]);
 		if (new_cell != -1)
 		{
-			char piece = game_ptr->cells[new_cell];
-			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			char piece = context->game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
-				output_buffer[index] = new_cell;
-				index++;
+				context->output_buffer[context->index] = new_cell;
+				context->index++;
 			}
 		}
 	}
-	return index;
+	return context->index;
 }
 
 int cc_internal_get_index(int bitset, int x, int y)
@@ -276,23 +283,23 @@ int cc_internal_get_index(int bitset, int x, int y)
 	return -1;
 }
 
-int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, char cell, char output_buffer[28])
+int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 {
-	char x = cc_get_x_cell(cell);
-	char y = cc_get_y_cell(cell);
+	char x = cc_get_x_cell(context->cell);
+	char y = cc_get_y_cell(context->cell);
 	int i;
 
 	i = cc_internal_get_index(bitset, x, y) + 1;
 	for (; i < 8; i++)
 	{
-		char new_cell = cell + (i - x) * offset;
+		char new_cell = context->cell + (i - x) * offset;
 		if (new_cell >=0 && new_cell < 64)
 		{
-			char piece = game_ptr->cells[new_cell];
-			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			char piece = context->game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
-				output_buffer[index] = new_cell;
-				index++;
+				context->output_buffer[context->index] = new_cell;
+				context->index++;
 			}
 			if (piece != CELL_NONE)
 			{
@@ -303,14 +310,14 @@ int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, ch
 	i = cc_internal_get_index(bitset, x, y) - 1;
 	for (; i >= 0; i--)
 	{
-		char new_cell = cell + (i - x) * offset;
+		char new_cell = context->cell + (i - x) * offset;
 		if (new_cell >=0 && new_cell < 64)
 		{
-			char piece = game_ptr->cells[new_cell];
-			if (!cc_is_piece_same_color(piece, game_ptr->cells[cell]))
+			char piece = context->game_ptr->cells[new_cell];
+			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
-				output_buffer[index] = new_cell;
-				index++;
+				context->output_buffer[context->index] = new_cell;
+				context->index++;
 			}
 			if (piece != CELL_NONE)
 			{
@@ -318,26 +325,26 @@ int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, ch
 			}
 		}
 	}
-	return index;
+	return context->index;
 }
 
-int cc_internal_fill_potential_hline(game* game_ptr, int index, char cell, char output_buffer[28])
+int cc_internal_fill_potential_hline(TurnContext* context)
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X, 1, index, cell, output_buffer);
+	return cc_internal_fill_line(context, MASK_USE_X, 1);
 }
 
-int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char output_buffer[28])
+int cc_internal_fill_potential_vline(TurnContext* context)
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_Y, 1, index, cell, output_buffer);
+	return cc_internal_fill_line(context, MASK_USE_Y, 1);
 }
 
-int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28])
+int cc_internal_fill_potential_dline7(TurnContext* context)
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y, 7, index, cell, output_buffer);
+	return cc_internal_fill_line(context, MASK_USE_X | MASK_USE_Y, 7);
 }
 
-int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28])
+int cc_internal_fill_potential_dline9(TurnContext* context)
 {
-	return cc_internal_fill_line(game_ptr, MASK_USE_X | MASK_USE_Y, 9, index, cell, output_buffer);
+	return cc_internal_fill_line(context, MASK_USE_X | MASK_USE_Y, 9);
 }
 

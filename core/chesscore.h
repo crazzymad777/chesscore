@@ -37,11 +37,21 @@
 #define PIECE_KNIGHT 5
 #define PIECE_PAWN 6
 
+#define CHESSCORE_WHITE 1
+#define CHESSCORE_BLACK -1
+
 typedef struct {
 	char state;
 	char last_cell;
 	char cells[64];
 } game;
+
+typedef struct{
+	game* game_ptr;
+	int index;
+	char cell;
+	char* output_buffer;
+} TurnContext;
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,15 +69,17 @@ int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
 
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
+
+int cc_internal_get_potential_turns(TurnContext* context);
 int cc_internal_get_index(int bitset, int x, int y);
-int cc_internal_fill_line(game* game_ptr, int bitset, char offset, int index, char cell, char output_buffer[28]);
-int cc_internal_get_potential_pawn_turns(game* game_ptr, char cell, char output_buffer[28]);
-int cc_internal_get_potential_king_turns(game* game_ptr, char cell, char output_buffer[28]);
-int cc_internal_get_potential_knight_turns(game* game_ptr, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_hline(game* game_ptr, int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_vline(game* game_ptr, int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_dline7(game* game_ptr, int index, char cell, char output_buffer[28]);
-int cc_internal_fill_potential_dline9(game* game_ptr, int index, char cell, char output_buffer[28]);
+int cc_internal_fill_line(TurnContext* context, int bitset, char offset);
+int cc_internal_get_potential_pawn_turns(TurnContext* context);
+int cc_internal_get_potential_king_turns(TurnContext* context);
+int cc_internal_get_potential_knight_turns(TurnContext* context);
+int cc_internal_fill_potential_hline(TurnContext* context);
+int cc_internal_fill_potential_vline(TurnContext* context);
+int cc_internal_fill_potential_dline7(TurnContext* context);
+int cc_internal_fill_potential_dline9(TurnContext* context);
 
 #define MASK_USE_X 0x1000
 #define MASK_USE_Y 0x10000
