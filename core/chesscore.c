@@ -31,8 +31,8 @@ void cc_init(game* game_ptr)
 	CELL_BLACK_ROOK, CELL_BLACK_KNIGHT, CELL_BLACK_BISHOP, CELL_BLACK_QUEEN, CELL_BLACK_KING, CELL_BLACK_BISHOP, CELL_BLACK_KNIGHT, CELL_BLACK_ROOK
 	};
 
-	game_ptr->state = 0;
-	game_ptr->last_cell = -1;
+	game_ptr->state = (char)0;
+	game_ptr->last_cell = (char)-1;
 	memcpy(game_ptr->cells, START_CELLS, 64);
 }
 
@@ -40,32 +40,32 @@ char cc_get_cell_id(int x, int y)
 {
 	if (x < 0 || x >= 8 || y < 0 || y >= 8)
 	{
-		return -1;
+		return (char)-1;
 	}
-	return x + y * 8;
+	return (char)(x + y * 8);
 }
 
 char cc_get_cell_id_by_id(int id)
 {
-	return (id >= 0 && id < 64) ? id : -1;
+	return (id >= 0 && id < 64) ? (char)id : (char)-1;
 }
 
 char cc_get_x_cell(char cell)
 {
-	if (cell < 0 || cell >= 64)
+	if (cell < (char)0 || cell >= (char)64)
 	{
-		return -1;
+		return (char)-1;
 	}
-	return cell % 8;
+	return cell % (char)8;
 }
 
 char cc_get_y_cell(char cell)
 {
-	if (cell < 0 || cell >= 64)
+	if (cell < (char)0 || cell >= (char)64)
 	{
-		return -1;
+		return (char)-1;
 	}
-	return cell / 8;
+	return cell / (char)8;
 }
 
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
@@ -78,24 +78,43 @@ void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
 		return;
 	}
 
-	// 2. check
+	//int color = (game_ptr->state & 1 << STATE_BIT_IS_BLACK_TURN) ? CHESSCORE_BLACK : CHESSCORE_WHITE;
+	//int cell = cc_find_piece(cc_get_colored_piece(PIECE_KING, color));
 }
 
 char cc_get_piece(char piece)
 {
-	return abs(piece);
+	return (char)abs((int)piece);
 }
 
 int cc_is_piece_same_color(char a, char b)
 {
-	return (a > 0 && b > 0) || (a < 0 && b < 0);
+	return (a > (char)0 && b > (char)0) || (a < (char)0 && b < (char)0);
 }
 
 char cc_get_opposite_color(char piece)
 {
-	if (piece > 0) return CHESSCORE_BLACK;
-	if (piece < 0) return CHESSCORE_WHITE;
-	return 0;
+	if (piece > (char)0) return CHESSCORE_BLACK;
+	if (piece < (char)0) return CHESSCORE_WHITE;
+	return (char)0;
+}
+
+char cc_get_colored_piece(char piece, char color)
+{
+	return piece * color;	
+}
+
+int cc_find_piece(game* game_ptr, char piece)
+{
+	int i;
+	for (i = 0; i < 64; i++)
+	{
+		if (game_ptr->cells[i] == piece)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
@@ -105,8 +124,9 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 	{
 		if (cc_is_piece_same_color(color, game_ptr->cells[i]))
 		{
-			char output_buffer[26];
-			cc_get_potential_turns_ex(game_ptr, i, output_buffer, 1);
+			char output_buffer[28];
+			memset(output_buffer, -1, 28);
+			(void)cc_get_potential_turns_ex(game_ptr, (char)i, output_buffer, (char)1);
 
 			int x;
 			for (x = 0; x < 28; x++)
@@ -121,7 +141,7 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 	return 0;
 }
 
-int cc_get_potential_turns_ex(game* game_ptr, char cell, char output_buffer[28], char pawn_attack)
+int cc_get_potential_turns_ex(game* game_ptr, char cell, /*@in@*/ char output_buffer[28], char pawn_attack)
 {
 	TurnContext context;
 	context.game_ptr = game_ptr;
@@ -135,10 +155,10 @@ int cc_get_potential_turns_ex(game* game_ptr, char cell, char output_buffer[28],
 
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 {
-	return cc_get_potential_turns_ex(game_ptr, cell, output_buffer, 0);
+	return cc_get_potential_turns_ex(game_ptr, cell, output_buffer, (char)0);
 }
 
-int cc_internal_get_potential_turns(TurnContext* context)
+int cc_internal_get_potential_turns(/*@in@*/ TurnContext* context)
 {
 	int current_piece = cc_get_piece(context->game_ptr->cells[context->cell]);
 
@@ -209,7 +229,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 			}
 		}
 	}
-	
+
 	new_cell = cc_get_cell_id_by_id(context->cell + direction + 1);
 	if (new_cell != -1)
 	{
@@ -304,7 +324,7 @@ int cc_internal_get_potential_knight_turns(TurnContext* context)
 		char new_cell = cc_get_cell_id_by_id(context->cell + moves[i]);
 		if (new_cell != -1)
 		{
-			char piece = context->game_ptr->cells[new_cell];
+			char piece = context->game_ptr->cells[(unsigned)new_cell];
 			if (!cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]))
 			{
 				context->output_buffer[context->index] = new_cell;

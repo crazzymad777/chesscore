@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& os, game g)
 	std::ostream::sentry s(os);
 	if (s)
 	{
-		os << "STATE_BIT_IS_WHITE_TURN: " << OUTPUT_BOOLEAN(g.state & STATE_BIT_IS_WHITE_TURN) << std::endl;
+		os << "STATE_BIT_IS_BLACK_TURN: " << OUTPUT_BOOLEAN(g.state & STATE_BIT_IS_BLACK_TURN) << std::endl;
 		os << "STATE_BIT_STALEMATE: " << OUTPUT_BOOLEAN(g.state & STATE_BIT_STALEMATE) << std::endl;
 		os << "STATE_BIT_WHITE_VICTORY: " << OUTPUT_BOOLEAN(g.state & STATE_BIT_WHITE_VICTORY) << std::endl;
 		os << "STATE_BIT_A1_ROOK_MOVED: " << OUTPUT_BOOLEAN(g.state & STATE_BIT_A1_ROOK_MOVED) << std::endl;
