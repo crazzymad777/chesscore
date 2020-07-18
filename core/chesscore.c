@@ -117,6 +117,40 @@ int cc_find_piece(game* game_ptr, char piece)
 	return -1;
 }
 
+int cc_is_cell_under_attack_for_check(game* game_ptr, char color, char cell, char cells_between[7])
+{
+	int i;
+    int number = 0;
+	for (i = 0; i < 64; i++)
+	{
+		if (cc_is_piece_same_color(color, game_ptr->cells[i]))
+		{
+			char output_buffer[28];
+			memset(output_buffer, -1, 28);
+            
+            TurnContext context;
+            cc_internal_init_context(&context, game_ptr, (char)i, output_buffer);
+            context.for_check = cell;
+
+			cc_internal_get_potential_turns(&context);
+
+			int x;
+			for (x = 0; x < 28; x++)
+			{
+				if (output_buffer[x] == cell)
+				{
+					number++;
+                    if (number == 2)
+                    {
+                        return number;
+                    }
+				}
+			}
+		}
+	}
+	return number;
+}
+
 int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 {
 	int i;
@@ -126,7 +160,12 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 		{
 			char output_buffer[28];
 			memset(output_buffer, -1, 28);
-			(void)cc_get_potential_turns_ex(game_ptr, (char)i, output_buffer, (char)1);
+            
+            TurnContext context;
+            cc_internal_init_context(&context, game_ptr, (char)i, output_buffer);
+            context.for_check = cell;
+            
+			cc_internal_get_potential_turns(&context);
 
 			int x;
 			for (x = 0; x < 28; x++)
@@ -141,21 +180,24 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
 	return 0;
 }
 
-int cc_get_potential_turns_ex(game* game_ptr, char cell, /*@in@*/ char output_buffer[28], char pawn_attack)
+void cc_internal_init_context(TurnContext* context, game* game_ptr, char cell, char output_buffer[28])
 {
-	TurnContext context;
-	context.game_ptr = game_ptr;
-	context.index = 0;
-	context.cell = cell;
-	context.pawn_attack = pawn_attack;
-	context.output_buffer = output_buffer;
+    static const char cells_between[7] = {(char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1};
 
-	return cc_internal_get_potential_turns(&context);
+	context->game_ptr = game_ptr;
+	context->index = 0;
+	context->cell = cell;
+	context->for_check = -1;
+	context->output_buffer = output_buffer;
+    memset(context->cells_between, -1, sizeof(cells_between));
 }
 
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28])
 {
-	return cc_get_potential_turns_ex(game_ptr, cell, output_buffer, (char)0);
+    TurnContext context;
+    cc_internal_init_context(&context, game_ptr, cell, output_buffer);
+
+    return cc_internal_get_potential_turns(&context);
 }
 
 int cc_internal_get_potential_turns(/*@in@*/ TurnContext* context)
@@ -210,7 +252,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	char new_cell = cc_get_cell_id_by_id(context->cell + direction);
 
 	// 
-	if (context->game_ptr->cells[new_cell] == CELL_NONE && !context->pawn_attack)
+	if (context->game_ptr->cells[new_cell] == CELL_NONE && context->for_check == -1)
 	{
 		context->output_buffer[context->index] = new_cell;
 		context->index++;
@@ -234,7 +276,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	if (new_cell != -1)
 	{
 		char piece = context->game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->pawn_attack)
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->for_check != -1)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;
@@ -263,7 +305,7 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 	if (new_cell != -1)
 	{
 		char piece = context->game_ptr->cells[new_cell];
-		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->pawn_attack)
+		if (piece != CELL_NONE && !cc_is_piece_same_color(piece, context->game_ptr->cells[context->cell]) || context->for_check !=-1)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;
