@@ -164,7 +164,7 @@ int cc_is_cell_under_attack(game* game_ptr, char color, char cell)
             TurnContext context;
             cc_internal_init_context(&context, game_ptr, (char)i, output_buffer);
             context.for_check = cell;
-            
+
 			cc_internal_get_potential_turns(&context);
 
 			int x;
@@ -186,6 +186,7 @@ void cc_internal_init_context(TurnContext* context, game* game_ptr, char cell, c
 
 	context->game_ptr = game_ptr;
 	context->index = 0;
+    context->cells_between_index = 0;
 	context->cell = cell;
 	context->for_check = -1;
 	context->output_buffer = output_buffer;
@@ -280,6 +281,12 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;
+
+            if (new_cell == context->for_check)
+            {
+                context->cells_between[context->cells_between_index] = context->cell;
+                context->cells_between_index++;
+            }
 		}
 
 		// En passant
@@ -309,6 +316,12 @@ int cc_internal_get_potential_pawn_turns(TurnContext* context)
 		{
 			context->output_buffer[context->index] = new_cell;
 			context->index++;
+
+            if (new_cell == context->for_check)
+            {
+                context->cells_between[context->cells_between_index] = context->cell;
+                context->cells_between_index++;
+            }
 		}
 
 		// En passant
@@ -371,6 +384,12 @@ int cc_internal_get_potential_knight_turns(TurnContext* context)
 			{
 				context->output_buffer[context->index] = new_cell;
 				context->index++;
+                
+                if (new_cell == context->for_check)
+                {
+                    context->cells_between[context->cells_between_index] = context->cell;
+                    context->cells_between_index++;
+                }
 			}
 		}
 	}
@@ -393,6 +412,8 @@ int cc_internal_get_index(int bitset, int x, int y)
 
 int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 {
+    char tmp_buffer[7] = {(char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1};
+    int tmp_index = 0;
 	char x = cc_get_x_cell(context->cell);
 	char y = cc_get_y_cell(context->cell);
 	int i;
@@ -408,6 +429,17 @@ int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 			{
 				context->output_buffer[context->index] = new_cell;
 				context->index++;
+
+                if (new_cell == context->for_check)
+                {
+                    memcpy(context->cells_between, tmp_buffer, 7);
+                    context->cells_between_index = tmp_index;
+                }
+                else
+                {
+                    tmp_buffer[tmp_index] = new_cell;
+                    tmp_index++;
+                }
 			}
 			if (piece != CELL_NONE)
 			{
@@ -426,6 +458,20 @@ int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 			{
 				context->output_buffer[context->index] = new_cell;
 				context->index++;
+
+                tmp_buffer[tmp_index] = new_cell;
+                tmp_index++;
+
+                if (new_cell == context->for_check)
+                {
+                    memcpy(context->cells_between, tmp_buffer, 7);
+                    context->cells_between_index = tmp_index;
+                }
+                else
+                {
+                    tmp_buffer[tmp_index] = new_cell;
+                    tmp_index++;
+                }
 			}
 			if (piece != CELL_NONE)
 			{

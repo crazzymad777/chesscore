@@ -49,6 +49,7 @@ typedef struct {
 typedef struct{
 	game* game_ptr;
 	int index;
+    int cells_between_index;
 	char cell;
 	char for_check;
     char cells_between[7];
