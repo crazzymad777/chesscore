@@ -66,6 +66,7 @@ char cc_get_cell_id_by_id(int id);
 char cc_get_x_cell(char cell);
 char cc_get_y_cell(char cell);
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
+void cc_move_mockup(game* game_ptr, char old_cell, char new_cell);
 char cc_get_piece(char piece);
 int cc_is_piece_same_color(char a, char b);
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);
@@ -73,10 +74,14 @@ char cc_get_opposite_color(char piece);
 char cc_get_colored_piece(char piece, char color);
 int cc_find_piece(game* game_ptr, char piece);
 
+int cc_is_cell_under_attack_for_check(game* game_ptr, char color, char cell, char cells_between[7]);
+
 #ifdef CHESSCORE_USE_INTERNAL_FUNCTIONS
 // Internals
 
 void cc_internal_init_context(TurnContext* context, game* game_ptr, char cell, char output_buffer[28]);
+void cc_internal_intersec(char output_buffer[28], char cells_between[7]);
+
 int cc_internal_get_potential_turns(/*@in@*/ TurnContext* context);
 int cc_internal_get_index(int bitset, int x, int y);
 int cc_internal_fill_line(TurnContext* context, int bitset, char offset);

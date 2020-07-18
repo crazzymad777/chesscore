@@ -78,8 +78,64 @@ void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
 		return;
 	}
 
-	//int color = (game_ptr->state & 1 << STATE_BIT_IS_BLACK_TURN) ? CHESSCORE_BLACK : CHESSCORE_WHITE;
-	//int cell = cc_find_piece(cc_get_colored_piece(PIECE_KING, color));
+	int color = (game_ptr->state & 1 << STATE_BIT_IS_BLACK_TURN) ? CHESSCORE_BLACK : CHESSCORE_WHITE;
+    if (!cc_is_piece_same_color(game_ptr->cells[cell], color)) return; 
+
+	char king_piece = cc_get_colored_piece(PIECE_KING, color);
+	char king_cell = cc_find_piece(game_ptr, king_piece);
+
+    char cells_between[7];
+    int n = cc_is_cell_under_attack_for_check(game_ptr, cc_get_opposite_color(king_piece), king_cell, cells_between);
+    
+    if (n == 0)
+    {
+        cc_get_potential_turns(game_ptr, cell, output_buffer);
+    } else if (n == 1) {
+        cc_get_potential_turns(game_ptr, cell, output_buffer);
+        cc_internal_intersec(output_buffer, cells_between);
+    } else if (n == 2) {
+        if (king_cell == cell)
+        {
+            cc_get_potential_turns(game_ptr, cell, output_buffer);
+        }
+    }
+}
+
+void cc_move_mockup(game* game_ptr, char old_cell, char new_cell)
+{
+    char output_buffer[28];
+    cc_get_turns(game_ptr, old_cell, output_buffer);
+    
+    for (int i = 0; i < 28; i++)
+    {
+        if (output_buffer[i] == new_cell)
+        {
+            game_ptr->cells[new_cell] = game_ptr->cells[old_cell];
+            game_ptr->cells[old_cell] = CELL_NONE;
+            return;
+        }
+    }
+}
+
+void cc_internal_intersec(char output_buffer[28], char cells_between[7])
+{
+    for (int i = 0; i < 28; i++)
+    {
+        char cell = output_buffer[i];
+        int d = 0;
+        for (; d < 7; d++)
+        {
+            if (cells_between[d] == cell)
+            {
+                break;
+            }
+        }
+
+        if (d == 7)
+        {
+            output_buffer[i] = -1;
+        }
+    }
 }
 
 char cc_get_piece(char piece)
@@ -139,6 +195,8 @@ int cc_is_cell_under_attack_for_check(game* game_ptr, char color, char cell, cha
 			{
 				if (output_buffer[x] == cell)
 				{
+                    memcpy(cells_between, context.cells_between, 7);
+
 					number++;
                     if (number == 2)
                     {
@@ -412,8 +470,8 @@ int cc_internal_get_index(int bitset, int x, int y)
 
 int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 {
-    char tmp_buffer[7] = {(char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1};
-    int tmp_index = 0;
+    char tmp_buffer[7] = {context->cell, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1, (char)-1};
+    int tmp_index = 1;
 	char x = cc_get_x_cell(context->cell);
 	char y = cc_get_y_cell(context->cell);
 	int i;
@@ -434,6 +492,7 @@ int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
                 {
                     memcpy(context->cells_between, tmp_buffer, 7);
                     context->cells_between_index = tmp_index;
+                    tmp_index = -1;
                 }
                 else
                 {
@@ -459,9 +518,6 @@ int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
 				context->output_buffer[context->index] = new_cell;
 				context->index++;
 
-                tmp_buffer[tmp_index] = new_cell;
-                tmp_index++;
-
                 if (new_cell == context->for_check)
                 {
                     memcpy(context->cells_between, tmp_buffer, 7);
@@ -469,8 +525,11 @@ int cc_internal_fill_line(TurnContext* context, int bitset, char offset)
                 }
                 else
                 {
-                    tmp_buffer[tmp_index] = new_cell;
-                    tmp_index++;
+                    if (tmp_index != -1)
+                    {
+                        tmp_buffer[tmp_index] = new_cell;
+                        tmp_index++;
+                    }
                 }
 			}
 			if (piece != CELL_NONE)
