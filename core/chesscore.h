@@ -66,7 +66,7 @@ char cc_get_cell_id_by_id(int id);
 char cc_get_x_cell(char cell);
 char cc_get_y_cell(char cell);
 void cc_get_turns(game* game_ptr, char cell, char output_buffer[28]);
-void cc_move_mockup(game* game_ptr, char old_cell, char new_cell);
+int cc_move_mockup(game* game_ptr, char old_cell, char new_cell);
 char cc_get_piece(char piece);
 int cc_is_piece_same_color(char a, char b);
 int cc_get_potential_turns(game* game_ptr, char cell, char output_buffer[28]);

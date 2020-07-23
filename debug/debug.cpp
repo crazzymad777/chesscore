@@ -92,6 +92,13 @@ int main(int argc, char* argv[])
 			}
 			std::cout << std::endl;
 		}
+		if (cmd == "move")
+		{
+			int x1, y1, x2, y2;
+			std::cin >> x1 >> y1 >> x2 >> y2;
+
+			cc_move_mockup(&chess_game, x1+y1*8, x2+y2*8);
+		}
 		if (cmd == "set")
 		{
 			int x, y, cell;

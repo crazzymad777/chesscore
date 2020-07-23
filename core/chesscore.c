@@ -101,7 +101,7 @@ void cc_get_turns(game* game_ptr, char cell, char output_buffer[28])
     }
 }
 
-void cc_move_mockup(game* game_ptr, char old_cell, char new_cell)
+int cc_move_mockup(game* game_ptr, char old_cell, char new_cell)
 {
     char output_buffer[28];
     cc_get_turns(game_ptr, old_cell, output_buffer);
@@ -112,9 +112,11 @@ void cc_move_mockup(game* game_ptr, char old_cell, char new_cell)
         {
             game_ptr->cells[new_cell] = game_ptr->cells[old_cell];
             game_ptr->cells[old_cell] = CELL_NONE;
-            return;
+            game_ptr->state ^= 1 << STATE_BIT_IS_BLACK_TURN;
+            return 1;
         }
     }
+	return 0;
 }
 
 void cc_internal_intersec(char output_buffer[28], char cells_between[7])
